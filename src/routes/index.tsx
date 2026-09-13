@@ -21,7 +21,7 @@ import {
   UsersRound,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import heroImage from "@/assets/aqua-hero.jpg";
 import factoryImage from "@/assets/bottling-line.jpg";
@@ -95,6 +95,92 @@ const productCards = [
 
 type ProductVisualName = (typeof productCards)[number]["visual"];
 
+function AnimatedCounter({
+  target,
+  suffix = "",
+  decimals = 0,
+}: {
+  target: number;
+  suffix?: string | undefined;
+  decimals?: number | undefined;
+}) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLSpanElement>(null);
+  const animated = useRef(false);
+
+  const animate = useCallback(() => {
+    if (animated.current) return;
+    animated.current = true;
+    const duration = 1800;
+    const start = performance.now();
+
+    const step = (now: number) => {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCount(eased * target);
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [target]);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          animate();
+          observer.unobserve(el);
+        }
+      },
+      { threshold: 0.3 },
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [animate]);
+
+  return (
+    <span ref={ref}>
+      {decimals ? count.toFixed(decimals) : Math.round(count)}
+      {suffix}
+    </span>
+  );
+}
+
+function AnimatedStat({
+  target,
+  suffix = "",
+  decimals = 0,
+  label,
+  index,
+}: {
+  target: number;
+  suffix?: string | undefined;
+  decimals?: number | undefined;
+  label: string;
+  index: number;
+}) {
+  return (
+    <div
+      className={`border-l border-border px-5 first:border-l-0 sm:px-7 scroll-animate scroll-up scroll-stagger-${index + 1}`}
+    >
+      <p className="font-display text-3xl font-bold text-deep sm:text-4xl">
+        <AnimatedCounter
+          target={target}
+          suffix={suffix}
+          decimals={decimals}
+        />
+      </p>
+      <p className="mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        {label}
+      </p>
+    </div>
+  );
+}
+
 function ProductVisual({
   title,
   visual,
@@ -147,9 +233,30 @@ function ProductVisual({
 
 function Index() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const mainRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const main = mainRef.current;
+    if (!main) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("scroll-visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.12 },
+    );
+
+    main.querySelectorAll(".scroll-animate").forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <main className="min-h-screen overflow-hidden bg-background">
+    <main ref={mainRef} className="min-h-screen overflow-hidden bg-background">
       <header className="fixed inset-x-0 top-0 z-50 border-b border-border/70 bg-background/92 backdrop-blur-xl">
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 lg:px-8">
           <a href="#home" className="flex items-center gap-2" aria-label="Hyrich Aqua home">
@@ -270,7 +377,7 @@ function Index() {
 
       <section id="about" className="bg-background py-20 lg:py-28">
         <div className="mx-auto grid max-w-7xl items-center gap-12 px-5 lg:grid-cols-[1.02fr_.98fr] lg:px-8">
-          <div className="relative">
+          <div className="relative scroll-animate scroll-left">
             <img
               src={factoryImage}
               alt="Hyrich Aqua bottles on a hygienic production line"
@@ -286,7 +393,7 @@ function Index() {
               <p className="mt-1 font-display text-lg font-bold">Bottled with precision</p>
             </div>
           </div>
-          <div className="lg:pl-8">
+          <div className="lg:pl-8 scroll-animate scroll-right">
             <p className="text-xs font-bold uppercase tracking-[0.32em] text-primary">
               About Hyrich Aqua
             </p>
@@ -316,7 +423,7 @@ function Index() {
 
       <section id="products" className="bg-sky-wash py-20 lg:py-28">
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
-          <div className="mx-auto max-w-2xl text-center">
+          <div className="mx-auto max-w-2xl text-center scroll-animate scroll-up">
             <p className="text-xs font-bold uppercase tracking-[0.32em] text-primary">
               Our products
             </p>
@@ -329,10 +436,10 @@ function Index() {
             </p>
           </div>
           <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {productCards.map(({ icon: Icon, title, copy, tag, visual, detail }) => (
+            {productCards.map(({ icon: Icon, title, copy, tag, visual, detail }, index) => (
               <article
                 key={title}
-                className="group overflow-hidden rounded-lg border border-border/70 bg-card shadow-[var(--shadow-card)] transition duration-300 hover:-translate-y-1"
+                className={`group overflow-hidden rounded-lg border border-border/70 bg-card shadow-[var(--shadow-card)] transition duration-300 hover:-translate-y-1 scroll-animate scroll-up scroll-stagger-${index + 1}`}
               >
                 <ProductVisual title={title} visual={visual} detail={detail} Icon={Icon} />
                 <div className="p-5">
@@ -356,35 +463,39 @@ function Index() {
 
       <section className="border-b border-border bg-background py-10">
         <div className="mx-auto grid max-w-7xl grid-cols-2 gap-y-8 px-5 sm:grid-cols-4 lg:px-8">
-          {[
-            { value: "15+", label: "Years of care" },
-            { value: "98%", label: "On-time fulfilment" },
-            { value: "4.9/5", label: "Partner rating" },
-            { value: "24 hrs", label: "Typical dispatch" },
-          ].map(({ value, label }) => (
-            <div key={label} className="border-l border-border px-5 first:border-l-0 sm:px-7">
-              <p className="font-display text-3xl font-bold text-deep sm:text-4xl">{value}</p>
-              <p className="mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                {label}
-              </p>
-            </div>
-          ))}
+          {([
+            { target: 15, suffix: "+", label: "Years of care" },
+            { target: 98, suffix: "%", label: "On-time fulfilment" },
+            { target: 4.9, suffix: "/5", label: "Partner rating", decimals: 1 },
+            { target: 24, suffix: " hrs", label: "Typical dispatch" },
+          ] as { target: number; suffix: string; label: string; decimals?: number }[]).map(
+            ({ target, suffix, label, decimals }, index) => (
+              <AnimatedStat
+                key={label}
+                target={target}
+                suffix={suffix}
+                decimals={decimals}
+                label={label}
+                index={index}
+              />
+            ),
+          )}
         </div>
       </section>
 
       <section id="why-hyrich" className="border-y border-border bg-background py-14">
         <div className="mx-auto grid max-w-7xl items-center gap-8 px-5 md:grid-cols-[1.4fr_2fr] lg:px-8">
-          <h2 className="font-display text-3xl font-bold text-deep">Why choose Hyrich Aqua?</h2>
+          <h2 className="font-display text-3xl font-bold text-deep scroll-animate scroll-left">Why choose Hyrich Aqua?</h2>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             {[
               { icon: Droplets, label: "Pure" },
               { icon: Sparkles, label: "Fresh" },
               { icon: ShieldCheck, label: "Protected" },
               { icon: Truck, label: "Dependable" },
-            ].map(({ icon: Icon, label }) => (
+            ].map(({ icon: Icon, label }, index) => (
               <div
                 key={label}
-                className="flex flex-col items-center border-l border-border px-3 text-center"
+                className={`flex flex-col items-center border-l border-border px-3 text-center scroll-animate scroll-up scroll-stagger-${index + 1}`}
               >
                 <Icon className="mb-2 size-7 text-primary" />
                 <span className="text-sm font-semibold text-deep">{label}</span>
@@ -396,7 +507,7 @@ function Index() {
 
       <section className="bg-sky-wash py-20 lg:py-24">
         <div className="mx-auto grid max-w-7xl gap-12 px-5 lg:grid-cols-[.9fr_1.1fr] lg:items-center lg:px-8">
-          <div>
+          <div className="scroll-animate scroll-left">
             <p className="text-xs font-bold uppercase tracking-[0.32em] text-primary">
               Built for the route ahead
             </p>
@@ -436,10 +547,10 @@ function Index() {
                 title: "Quick response",
                 copy: "A real team on hand when an order, question, or change comes up.",
               },
-            ].map(({ icon: Icon, title, copy }) => (
+            ].map(({ icon: Icon, title, copy }, index) => (
               <div
                 key={title}
-                className="rounded-lg border border-border/70 bg-background p-5 transition hover:-translate-y-1 hover:shadow-[var(--shadow-card)]"
+                className={`rounded-lg border border-border/70 bg-background p-5 transition hover:-translate-y-1 hover:shadow-[var(--shadow-card)] scroll-animate scroll-right scroll-stagger-${index + 1}`}
               >
                 <Icon className="size-7 text-primary" />
                 <h3 className="mt-5 font-display text-lg font-bold text-deep">{title}</h3>
@@ -452,11 +563,11 @@ function Index() {
 
       <section className="bg-background py-20 lg:py-24">
         <div className="mx-auto grid max-w-7xl gap-12 px-5 lg:grid-cols-[1fr_.8fr] lg:items-center lg:px-8">
-          <div className="relative overflow-hidden rounded-lg bg-deep p-7 text-deep-foreground sm:p-10">
+          <div className="relative overflow-hidden rounded-lg bg-deep p-7 text-deep-foreground sm:p-10 scroll-animate scroll-left">
             <Quote className="absolute right-7 top-7 size-16 text-sky-soft/20" />
             <p className="relative max-w-xl font-display text-2xl font-bold leading-relaxed sm:text-3xl">
-              “When water arrives on time and tastes right every time, it becomes one less thing to
-              worry about.”
+              "When water arrives on time and tastes right every time, it becomes one less thing to
+              worry about."
             </p>
             <div className="relative mt-8 flex items-center gap-3 border-t border-deep-foreground/15 pt-5">
               <span className="grid size-10 place-items-center rounded-full bg-primary font-bold">
@@ -470,7 +581,7 @@ function Index() {
               </span>
             </div>
           </div>
-          <div>
+          <div className="scroll-animate scroll-right">
             <p className="text-xs font-bold uppercase tracking-[0.32em] text-primary">
               Distribution coverage
             </p>
@@ -501,7 +612,7 @@ function Index() {
 
       <section className="border-t border-border bg-sky-wash py-20 lg:py-24">
         <div className="mx-auto grid max-w-7xl gap-12 px-5 lg:grid-cols-[.85fr_1.15fr] lg:px-8">
-          <div>
+          <div className="scroll-animate scroll-left">
             <p className="text-xs font-bold uppercase tracking-[0.32em] text-primary">
               Good to know
             </p>
@@ -518,7 +629,7 @@ function Index() {
               Ask our team <ArrowRight className="size-4" />
             </a>
           </div>
-          <div className="divide-y divide-border rounded-lg border border-border bg-background px-5 sm:px-7">
+          <div className="divide-y divide-border rounded-lg border border-border bg-background px-5 sm:px-7 scroll-animate scroll-right">
             {[
               {
                 question: "What areas do you deliver to?",
@@ -552,7 +663,7 @@ function Index() {
 
       <section id="contact" className="relative overflow-hidden bg-deep py-16 text-deep-foreground">
         <div className="absolute inset-0 opacity-15 [background-image:radial-gradient(circle_at_75%_130%,var(--sky-soft),transparent_45%)]" />
-        <div className="relative mx-auto flex max-w-7xl flex-col items-start justify-between gap-8 px-5 md:flex-row md:items-center lg:px-8">
+        <div className="relative mx-auto flex max-w-7xl flex-col items-start justify-between gap-8 px-5 md:flex-row md:items-center lg:px-8 scroll-animate scroll-up">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.3em] text-sky-soft">
               Stay hydrated · Stay healthy

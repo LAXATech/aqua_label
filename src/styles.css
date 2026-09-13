@@ -194,6 +194,85 @@
   animation: float-in 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
+@keyframes scroll-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scroll-fade-left {
+  from {
+    opacity: 0;
+    transform: translateX(-32px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scroll-fade-right {
+  from {
+    opacity: 0;
+    transform: translateX(32px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scroll-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.scroll-animate {
+  opacity: 0;
+}
+
+.scroll-animate.scroll-visible {
+  animation-duration: 0.7s;
+  animation-fill-mode: both;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.scroll-up.scroll-visible {
+  animation-name: scroll-fade-up;
+}
+
+.scroll-left.scroll-visible {
+  animation-name: scroll-fade-left;
+}
+
+.scroll-right.scroll-visible {
+  animation-name: scroll-fade-right;
+}
+
+.scroll-scale.scroll-visible {
+  animation-name: scroll-scale-in;
+}
+
+.scroll-stagger-1 { animation-delay: 0ms; }
+.scroll-stagger-2 { animation-delay: 100ms; }
+.scroll-stagger-3 { animation-delay: 200ms; }
+.scroll-stagger-4 { animation-delay: 300ms; }
+.scroll-stagger-5 { animation-delay: 400ms; }
+.scroll-stagger-6 { animation-delay: 500ms; }
+.scroll-stagger-7 { animation-delay: 600ms; }
+.scroll-stagger-8 { animation-delay: 700ms; }
+
 .product-visual {
   position: relative;
   display: grid;
@@ -242,5 +321,8 @@
   *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+  }
+  .scroll-animate {
+    opacity: 1 !important;
   }
 }
