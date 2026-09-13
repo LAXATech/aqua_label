@@ -93,6 +93,58 @@ const productCards = [
   },
 ] as const;
 
+type ProductVisualName = (typeof productCards)[number]["visual"];
+
+function ProductVisual({
+  title,
+  visual,
+  detail,
+  Icon,
+}: {
+  title: string;
+  visual: ProductVisualName;
+  detail: string;
+  Icon: (typeof productCards)[number]["icon"];
+}) {
+  return (
+    <div className="product-visual" aria-label={`${title} packaging preview`} role="img">
+      <span className="product-visual-kicker">HYRICH AQUA</span>
+      {visual === "bottle" && (
+        <img
+          src={packagedWaterImage}
+          alt="Packaged Drinking Water"
+          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+        />
+      )}
+      {visual === "canister" && (
+        <img
+          src={bulkWaterImage}
+          alt="Bulk Water Supply"
+          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+        />
+      )}
+      {visual === "pack" && (
+        <img
+          src="https://images.unsplash.com/photo-1560023907-5f339617ea30?auto=format&fit=crop&q=80&w=800&h=600"
+          alt="Custom Packs"
+          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+        />
+      )}
+      {visual === "cases" && (
+        <img
+          src="https://images.unsplash.com/photo-1587293852726-70cdb56c2866?auto=format&fit=crop&q=80&w=800&h=600"
+          alt="Trade & Distribution"
+          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+        />
+      )}
+      <span className="absolute left-4 top-4 grid size-10 place-items-center rounded-full bg-background/90 text-primary shadow-sm backdrop-blur">
+        <Icon className="size-5" />
+      </span>
+      <span className="product-visual-detail">{detail}</span>
+    </div>
+  );
+}
+
 function Index() {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -282,29 +334,7 @@ function Index() {
                 key={title}
                 className="group overflow-hidden rounded-lg border border-border/70 bg-card shadow-[var(--shadow-card)] transition duration-300 hover:-translate-y-1"
               >
-                <div
-                  className="product-visual"
-                  aria-label={`${title} packaging preview`}
-                  role="img"
-                >
-                  <span className="product-visual-kicker">HYRICH AQUA</span>
-                  {visual === "bottle" && (
-                    <img src={packagedWaterImage} alt="Packaged Drinking Water" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
-                  )}
-                  {visual === "canister" && (
-                    <img src={bulkWaterImage} alt="Bulk Water Supply" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
-                  )}
-                  {visual === "pack" && (
-                    <img src="https://images.unsplash.com/photo-1560023907-5f339617ea30?auto=format&fit=crop&q=80&w=800&h=600" alt="Custom Packs" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
-                  )}
-                  {visual === "cases" && (
-                    <img src="https://images.unsplash.com/photo-1587293852726-70cdb56c2866?auto=format&fit=crop&q=80&w=800&h=600" alt="Trade & Distribution" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
-                  )}
-                  <span className="absolute left-4 top-4 grid size-10 place-items-center rounded-full bg-background/90 text-primary shadow-sm backdrop-blur">
-                    <Icon className="size-5" />
-                  </span>
-                  <span className="product-visual-detail">{detail}</span>
-                </div>
+                <ProductVisual title={title} visual={visual} detail={detail} Icon={Icon} />
                 <div className="p-5">
                   <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
                     {tag}
