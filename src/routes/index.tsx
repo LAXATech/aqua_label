@@ -27,6 +27,8 @@ import heroImage from "@/assets/aqua-hero.jpg";
 import factoryImage from "@/assets/bottling-line.jpg";
 import packagedWaterImage from "@/assets/Packaged Drinking Water.png";
 import bulkWaterImage from "@/assets/Bulk Water Supply.png";
+import customPacksImage from "@/assets/Custom Packs.png";
+import tradeDistributionImage from "@/assets/Trade & Distribution.png";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -211,14 +213,14 @@ function ProductVisual({
       )}
       {visual === "pack" && (
         <img
-          src="https://images.unsplash.com/photo-1560023907-5f339617ea30?auto=format&fit=crop&q=80&w=800&h=600"
+          src={customPacksImage}
           alt="Custom Packs"
           className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
         />
       )}
       {visual === "cases" && (
         <img
-          src="https://images.unsplash.com/photo-1587293852726-70cdb56c2866?auto=format&fit=crop&q=80&w=800&h=600"
+          src={tradeDistributionImage}
           alt="Trade & Distribution"
           className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
         />
